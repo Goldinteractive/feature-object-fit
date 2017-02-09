@@ -14,7 +14,7 @@ Install polyfill functionality for `object-fit` / `object-position` properties o
 
 Install this package with sackmesser:
 
-    make feature-install object-fit-images
+    make feature-install-object-fit-images
 
 or when sackmesser is not used:
 
