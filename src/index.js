@@ -6,6 +6,23 @@ import objectFitImages from 'object-fit-images'
 class ObjectFitImage extends base.features.Feature {
 
   init() {
+    this._objectFit = this.node.getAttribute('data-object-fit')
+    this._objectPosition = this.node.getAttribute('data-object-position')
+
+    if (this._objectFit) {
+      this.node.style.objectFit = this._objectFit
+    } else {
+      this._objectFit = base.utils.dom.computedStyle(this.node, 'object-fit')
+    }
+
+    if (this._objectPosition) {
+      this.node.style.objectPosition = this._objectPosition
+    } else {
+      this._objectFit = base.utils.dom.computedStyle(this.node, 'object-position')
+    }
+
+    this.node.style.fontFamily = `"object-fit: ${this._objectFit}; object-position: ${this._objectPosition}"`
+
     objectFitImages(this.node, this.options)
   }
 
