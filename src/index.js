@@ -18,7 +18,7 @@ class ObjectFitImage extends base.features.Feature {
     if (this._objectPosition) {
       this.node.style.objectPosition = this._objectPosition
     } else {
-      this._objectFit = base.utils.dom.computedStyle(this.node, 'object-position')
+      this._objectPosition = base.utils.dom.computedStyle(this.node, 'object-position')
     }
 
     this.node.style.fontFamily = `"object-fit: ${this._objectFit}; object-position: ${this._objectPosition}"`
