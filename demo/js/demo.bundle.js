@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -3728,7 +3728,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /* WEBPACK VAR INJECTION */(function(base) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(2), __webpack_require__(4), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(4), __webpack_require__(5), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -3883,533 +3883,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/*! npm.im/object-fit-images */
-var OFI = 'bfred-it:object-fit-images';
-var propRegex = /(object-fit|object-position)\s*:\s*([-\w\s%]+)/g;
-var testImg = new Image();
-var supportsObjectFit = 'object-fit' in testImg.style;
-var supportsObjectPosition = 'object-position' in testImg.style;
-var supportsOFI = 'background-size' in testImg.style;
-var supportsCurrentSrc = typeof testImg.currentSrc === 'string';
-var nativeGetAttribute = testImg.getAttribute;
-var nativeSetAttribute = testImg.setAttribute;
-var autoModeEnabled = false;
-
-function createPlaceholder(w, h) {
-	return ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='" + w + "' height='" + h + "'%3E%3C/svg%3E");
-}
-
-function polyfillCurrentSrc(el) {
-	if (el.srcset && !supportsCurrentSrc && window.picturefill) {
-		var pf = window.picturefill._;
-		// parse srcset with picturefill where currentSrc isn't available
-		if (!el[pf.ns] || !el[pf.ns].evaled) {
-			// force synchronous srcset parsing
-			pf.fillImg(el, {reselect: true});
-		}
-
-		if (!el[pf.ns].curSrc) {
-			// force picturefill to parse srcset
-			el[pf.ns].supported = false;
-			pf.fillImg(el, {reselect: true});
-		}
-
-		// retrieve parsed currentSrc, if any
-		el.currentSrc = el[pf.ns].curSrc || el.src;
-	}
-}
-
-function getStyle(el) {
-	var style = getComputedStyle(el).fontFamily;
-	var parsed;
-	var props = {};
-	while ((parsed = propRegex.exec(style)) !== null) {
-		props[parsed[1]] = parsed[2];
-	}
-	return props;
-}
-
-function setPlaceholder(img, width, height) {
-	// Default: fill width, no height
-	var placeholder = createPlaceholder(width || 1, height || 0);
-
-	// Only set placeholder if it's different
-	if (nativeGetAttribute.call(img, 'src') !== placeholder) {
-		nativeSetAttribute.call(img, 'src', placeholder);
-	}
-}
-
-function onImageReady(img, callback) {
-	// naturalWidth is only available when the image headers are loaded,
-	// this loop will poll it every 100ms.
-	if (img.naturalWidth) {
-		callback(img);
-	} else {
-		setTimeout(onImageReady, 100, img, callback);
-	}
-}
-
-function fixOne(el) {
-	var style = getStyle(el);
-	var ofi = el[OFI];
-	style['object-fit'] = style['object-fit'] || 'fill'; // default value
-
-	// Avoid running where unnecessary, unless OFI had already done its deed
-	if (!ofi.img) {
-		// fill is the default behavior so no action is necessary
-		if (style['object-fit'] === 'fill') {
-			return;
-		}
-
-		// Where object-fit is supported and object-position isn't (Safari < 10)
-		if (
-			!ofi.skipTest && // unless user wants to apply regardless of browser support
-			supportsObjectFit && // if browser already supports object-fit
-			!style['object-position'] // unless object-position is used
-		) {
-			return;
-		}
-	}
-
-	// keep a clone in memory while resetting the original to a blank
-	if (!ofi.img) {
-		ofi.img = new Image(el.width, el.height);
-		ofi.img.srcset = nativeGetAttribute.call(el, "data-ofi-srcset") || el.srcset;
-		ofi.img.src = nativeGetAttribute.call(el, "data-ofi-src") || el.src;
-
-		// preserve for any future cloneNode calls
-		// https://github.com/bfred-it/object-fit-images/issues/53
-		nativeSetAttribute.call(el, "data-ofi-src", el.src);
-		if (el.srcset) {
-			nativeSetAttribute.call(el, "data-ofi-srcset", el.srcset);
-		}
-
-		setPlaceholder(el, el.naturalWidth || el.width, el.naturalHeight || el.height);
-
-		// remove srcset because it overrides src
-		if (el.srcset) {
-			el.srcset = '';
-		}
-		try {
-			keepSrcUsable(el);
-		} catch (err) {
-			if (window.console) {
-				console.log('http://bit.ly/ofi-old-browser');
-			}
-		}
-	}
-
-	polyfillCurrentSrc(ofi.img);
-
-	el.style.backgroundImage = "url(" + ((ofi.img.currentSrc || ofi.img.src).replace('(', '%28').replace(')', '%29')) + ")";
-	el.style.backgroundPosition = style['object-position'] || 'center';
-	el.style.backgroundRepeat = 'no-repeat';
-
-	if (/scale-down/.test(style['object-fit'])) {
-		onImageReady(ofi.img, function () {
-			if (ofi.img.naturalWidth > el.width || ofi.img.naturalHeight > el.height) {
-				el.style.backgroundSize = 'contain';
-			} else {
-				el.style.backgroundSize = 'auto';
-			}
-		});
-	} else {
-		el.style.backgroundSize = style['object-fit'].replace('none', 'auto').replace('fill', '100% 100%');
-	}
-
-	onImageReady(ofi.img, function (img) {
-		setPlaceholder(el, img.naturalWidth, img.naturalHeight);
-	});
-}
-
-function keepSrcUsable(el) {
-	var descriptors = {
-		get: function get(prop) {
-			return el[OFI].img[prop ? prop : 'src'];
-		},
-		set: function set(value, prop) {
-			el[OFI].img[prop ? prop : 'src'] = value;
-			nativeSetAttribute.call(el, ("data-ofi-" + prop), value); // preserve for any future cloneNode
-			fixOne(el);
-			return value;
-		}
-	};
-	Object.defineProperty(el, 'src', descriptors);
-	Object.defineProperty(el, 'currentSrc', {
-		get: function () { return descriptors.get('currentSrc'); }
-	});
-	Object.defineProperty(el, 'srcset', {
-		get: function () { return descriptors.get('srcset'); },
-		set: function (ss) { return descriptors.set(ss, 'srcset'); }
-	});
-}
-
-function hijackAttributes() {
-	function getOfiImageMaybe(el, name) {
-		return el[OFI] && el[OFI].img && (name === 'src' || name === 'srcset') ? el[OFI].img : el;
-	}
-	if (!supportsObjectPosition) {
-		HTMLImageElement.prototype.getAttribute = function (name) {
-			return nativeGetAttribute.call(getOfiImageMaybe(this, name), name);
-		};
-
-		HTMLImageElement.prototype.setAttribute = function (name, value) {
-			return nativeSetAttribute.call(getOfiImageMaybe(this, name), name, String(value));
-		};
-	}
-}
-
-function fix(imgs, opts) {
-	var startAutoMode = !autoModeEnabled && !imgs;
-	opts = opts || {};
-	imgs = imgs || 'img';
-
-	if ((supportsObjectPosition && !opts.skipTest) || !supportsOFI) {
-		return false;
-	}
-
-	// use imgs as a selector or just select all images
-	if (typeof imgs === 'string') {
-		imgs = document.querySelectorAll(imgs);
-	} else if (!('length' in imgs)) {
-		imgs = [imgs];
-	}
-
-	// apply fix to all
-	for (var i = 0; i < imgs.length; i++) {
-		imgs[i][OFI] = imgs[i][OFI] || {
-			skipTest: opts.skipTest
-		};
-		fixOne(imgs[i]);
-	}
-
-	if (startAutoMode) {
-		document.body.addEventListener('load', function (e) {
-			if (e.target.tagName === 'IMG') {
-				fix(e.target, {
-					skipTest: opts.skipTest
-				});
-			}
-		}, true);
-		autoModeEnabled = true;
-		imgs = 'img'; // reset to a generic selector for watchMQ
-	}
-
-	// if requested, watch media queries for object-fit change
-	if (opts.watchMQ) {
-		window.addEventListener('resize', fix.bind(null, imgs, {
-			skipTest: opts.skipTest
-		}));
-	}
-}
-
-fix.supportsObjectFit = supportsObjectFit;
-fix.supportsObjectPosition = supportsObjectPosition;
-
-hijackAttributes();
-
-/* harmony default export */ __webpack_exports__["default"] = fix;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(base) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else if (typeof exports !== "undefined") {
-    factory(require('../src'));
-  } else {
-    var mod = {
-      exports: {}
-    };
-    factory(global.src);
-    global.demo = mod.exports;
-  }
-})(this, function (_src) {
-  'use strict';
-
-  var _src2 = _interopRequireDefault(_src);
-
-  function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : {
-      default: obj
-    };
-  }
-
-  base.features.add('fit', _src2.default);
-  base.features.init();
-});
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-/**
- * Object Fit Videos
- * Polyfill for object-fit and object-position CSS properties on video elements
- * Covers IE9, IE10, IE11, Edge, Safari <10
- *
- * Usage
- * In your CSS, add a special font-family tag for IE/Edge
- * video {
- *   object-fit: cover;
- *   font-family: 'object-fit: cover;';
- * }
- *
- * Before the closing body tag, or whenever the DOM is ready,
- * make the JavaScript call
- * objectFitVideos();
- *
- * All video elements with the special CSS property will be targeted
- *
- * @license  MIT (https://opensource.org/licenses/MIT)
- * @author   Todd Miller <todd.miller@tricomb2b.com>
- * @version  1.0.2
- * @changelog
- * 2016-08-19 - Adds object-position support.
- * 2016-08-19 - Add throttle function for more performant resize events
- * 2016-08-19 - Initial release with object-fit support, and
- *              object-position default 'center'
- * 2016-10-14 - No longer relies on window load event, instead requires a specific
- *              function call to initialize the videos for object fit and position.
- * 2016-11-28 - Support CommonJS environment, courtesy of @msorensson
- * 2016-12-05 - Refactors the throttling function to support IE
- */
-var objectFitVideos = function (videos) {
-  'use strict';
-
-  var testImg                = new Image(),
-      supportsObjectFit      = 'object-fit' in testImg.style,
-      supportsObjectPosition = 'object-position' in testImg.style,
-      propRegex              = /(object-fit|object-position)\s*:\s*([-\w\s%]+)/g;
-
-  if (!supportsObjectFit || !supportsObjectPosition) {
-    initialize(videos);
-    throttle('resize', 'optimizedResize');
-  }
-
-  /**
-   * Parse the style and look for the special font-family tag
-   * @param  {object} $el The element to parse
-   * @return {object}     The font-family properties we're interested in
-   */
-  function getStyle ($el) {
-    var style  = getComputedStyle($el).fontFamily,
-        parsed = null,
-        props  = {};
-
-      while ((parsed = propRegex.exec(style)) !== null) {
-        props[parsed[1]] = parsed[2];
-      }
-
-      if (props['object-position'])
-        return parsePosition(props);
-
-      return props;
-  }
-
-  /**
-   * Initialize all the relevant video elements and get them fitted
-   */
-  function initialize (videos) {
-    var index  = -1;
-    videos = videos || 'video';
-
-    // use videos as a selector or just select all videos
-    if (typeof videos === 'string') {
-      videos = document.querySelectorAll(videos);
-    } else if (!('length' in videos)) {
-      videos = [videos];
-    }
-
-    while (videos[++index]) {
-      var style = getStyle(videos[index]);
-
-      // only do work if the property is on the element
-      if (style['object-fit'] || style['object-position']) {
-        // set the default values
-        style['object-fit'] = style['object-fit'] || 'fill';
-        fitIt(videos[index], style);
-      }
-    }
-  }
-
-  /**
-   * Object Fit
-   * @param  {object} $el Element to fit
-   * @return {object}     The element's relevant properties
-   */
-  function fitIt ($el, style) {
-    // fill is the default behavior, no action is necessary
-    if (style['object-fit'] === 'fill')
-      return;
-
-    // convenience style properties on the source element
-    var setCss = $el.style,
-        getCss = window.getComputedStyle($el);
-
-    // create and insert a wrapper element
-    var $wrap = document.createElement('object-fit');
-    $wrap.appendChild($el.parentNode.replaceChild($wrap, $el));
-
-    // style the wrapper element to mostly match the source element
-    var wrapCss = {
-      height:    '100%',
-      width:     '100%',
-      boxSizing: 'content-box',
-      display:   'inline-block',
-      overflow:  'hidden'
-    };
-
-    'backgroundColor backgroundImage borderColor borderStyle borderWidth bottom fontSize lineHeight left opacity margin position right top visibility'.replace(/\w+/g, function (key) {
-      wrapCss[key] = getCss[key];
-    });
-
-    for (var key in wrapCss)
-      $wrap.style[key] = wrapCss[key];
-
-    // give the source element some saner styles
-    setCss.border  = setCss.margin = setCss.padding = 0;
-    setCss.display = 'block';
-    setCss.opacity = 1;
-
-    // set up the event handlers
-    $el.addEventListener('loadedmetadata', doWork);
-    window.addEventListener('optimizedResize', doWork);
-
-    // we may have missed the loadedmetadata event, so if the video has loaded
-    // enough data, just drop the event listener and execute
-    if ($el.readyState >= 1) {
-      $el.removeEventListener('loadedmetadata', doWork);
-      doWork();
-    }
-
-    /**
-     * Do the actual sizing. Math.
-     * @methodOf fitIt
-     */
-    function doWork () {
-      // the actual size and ratio of the video
-      // we do this here, even though it doesn't change, because
-      // at this point we can be sure the metadata has loaded
-      var videoWidth  = $el.videoWidth,
-          videoHeight = $el.videoHeight,
-          videoRatio  = videoWidth / videoHeight;
-
-      var wrapWidth  = $wrap.clientWidth,
-          wrapHeight = $wrap.clientHeight,
-          wrapRatio  = wrapWidth / wrapHeight;
-
-      var newHeight = 0,
-          newWidth  = 0;
-      setCss.marginLeft = setCss.marginTop = 0;
-
-      // basically we do the opposite action for contain and cover,
-      // depending on whether the video aspect ratio is less than or
-      // greater than the wrapper's aspect ratio
-      if (videoRatio < wrapRatio ?
-          style['object-fit'] === 'contain' : style['object-fit'] === 'cover') {
-        newHeight = wrapHeight * videoRatio;
-        newWidth  = wrapWidth / videoRatio;
-
-        setCss.width  = Math.round(newHeight) + 'px';
-        setCss.height = wrapHeight + 'px';
-
-        if (style['object-position-x'] === 'left')
-          setCss.marginLeft = 0;
-        else if (style['object-position-x'] === 'right')
-          setCss.marginLeft = Math.round(wrapWidth - newHeight) + 'px';
-        else
-          setCss.marginLeft = Math.round((wrapWidth - newHeight) / 2) + 'px';
-      } else {
-        newWidth = wrapWidth / videoRatio;
-
-        setCss.width     = wrapWidth + 'px';
-        setCss.height    = Math.round(newWidth) + 'px';
-
-        if (style['object-position-y'] === 'top')
-          setCss.marginTop = 0;
-        else if (style['object-position-y'] === 'bottom')
-          setCss.marginTop = Math.round(wrapHeight - newWidth) + 'px';
-        else
-          setCss.marginTop = Math.round((wrapHeight - newWidth) / 2) + 'px';
-      }
-    }
-  }
-
-  /**
-   * Split the object-position property into x and y position properties
-   * @param  {object} style Relevant element styles
-   * @return {object}       The style object with the added x and y props
-   */
-  function parsePosition (style) {
-    if (~style['object-position'].indexOf('left'))
-      style['object-position-x'] = 'left';
-    else if (~style['object-position'].indexOf('right'))
-      style['object-position-x'] = 'right';
-    else
-      style['object-position-x'] = 'center';
-
-    if (~style['object-position'].indexOf('top'))
-      style['object-position-y'] = 'top';
-    else if (~style['object-position'].indexOf('bottom'))
-      style['object-position-y'] = 'bottom';
-    else
-      style['object-position-y'] = 'center';
-
-    return style;
-  }
-
-  /**
-   * Throttle an event with RequestAnimationFrame API for better performance
-   * @param  {string} type The event to throttle
-   * @param  {string} name Custom event name to listen for
-   * @param  {object} obj  Optional object to attach the event to
-   */
-  function throttle (type, name, obj) {
-    obj = obj || window;
-    var running = false,
-        evt     = null;
-
-    // IE does not support the CustomEvent constructor
-    // so if that fails do it the old way
-    try {
-      evt = new CustomEvent(name);
-    } catch (e) {
-      evt = document.createEvent('Event');
-      evt.initEvent(name, true, true);
-    }
-
-    var func = function () {
-      if (running) return;
-
-      running = true;
-      requestAnimationFrame(function () {
-        obj.dispatchEvent(evt);
-        running = false;
-      });
-    };
-
-    obj.addEventListener(type, func);
-  }
-};
-
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
-  module.exports = objectFitVideos;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /* unused harmony export intervalometer */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return frameIntervalometer; });
 /* unused harmony export timerIntervalometer */
@@ -4451,12 +3924,12 @@ function timerIntervalometer(cb, delay) {
 
 
 /***/ }),
-/* 6 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_intervalometer__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_intervalometer__ = __webpack_require__(2);
 /*! npm.im/iphone-inline-video 2.0.2 */
 
 
@@ -4800,6 +4273,533 @@ function enableInlineVideo(video, opts) {
 
 /* harmony default export */ __webpack_exports__["default"] = enableInlineVideo;
 
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/*! npm.im/object-fit-images */
+var OFI = 'bfred-it:object-fit-images';
+var propRegex = /(object-fit|object-position)\s*:\s*([-\w\s%]+)/g;
+var testImg = new Image();
+var supportsObjectFit = 'object-fit' in testImg.style;
+var supportsObjectPosition = 'object-position' in testImg.style;
+var supportsOFI = 'background-size' in testImg.style;
+var supportsCurrentSrc = typeof testImg.currentSrc === 'string';
+var nativeGetAttribute = testImg.getAttribute;
+var nativeSetAttribute = testImg.setAttribute;
+var autoModeEnabled = false;
+
+function createPlaceholder(w, h) {
+	return ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='" + w + "' height='" + h + "'%3E%3C/svg%3E");
+}
+
+function polyfillCurrentSrc(el) {
+	if (el.srcset && !supportsCurrentSrc && window.picturefill) {
+		var pf = window.picturefill._;
+		// parse srcset with picturefill where currentSrc isn't available
+		if (!el[pf.ns] || !el[pf.ns].evaled) {
+			// force synchronous srcset parsing
+			pf.fillImg(el, {reselect: true});
+		}
+
+		if (!el[pf.ns].curSrc) {
+			// force picturefill to parse srcset
+			el[pf.ns].supported = false;
+			pf.fillImg(el, {reselect: true});
+		}
+
+		// retrieve parsed currentSrc, if any
+		el.currentSrc = el[pf.ns].curSrc || el.src;
+	}
+}
+
+function getStyle(el) {
+	var style = getComputedStyle(el).fontFamily;
+	var parsed;
+	var props = {};
+	while ((parsed = propRegex.exec(style)) !== null) {
+		props[parsed[1]] = parsed[2];
+	}
+	return props;
+}
+
+function setPlaceholder(img, width, height) {
+	// Default: fill width, no height
+	var placeholder = createPlaceholder(width || 1, height || 0);
+
+	// Only set placeholder if it's different
+	if (nativeGetAttribute.call(img, 'src') !== placeholder) {
+		nativeSetAttribute.call(img, 'src', placeholder);
+	}
+}
+
+function onImageReady(img, callback) {
+	// naturalWidth is only available when the image headers are loaded,
+	// this loop will poll it every 100ms.
+	if (img.naturalWidth) {
+		callback(img);
+	} else {
+		setTimeout(onImageReady, 100, img, callback);
+	}
+}
+
+function fixOne(el) {
+	var style = getStyle(el);
+	var ofi = el[OFI];
+	style['object-fit'] = style['object-fit'] || 'fill'; // default value
+
+	// Avoid running where unnecessary, unless OFI had already done its deed
+	if (!ofi.img) {
+		// fill is the default behavior so no action is necessary
+		if (style['object-fit'] === 'fill') {
+			return;
+		}
+
+		// Where object-fit is supported and object-position isn't (Safari < 10)
+		if (
+			!ofi.skipTest && // unless user wants to apply regardless of browser support
+			supportsObjectFit && // if browser already supports object-fit
+			!style['object-position'] // unless object-position is used
+		) {
+			return;
+		}
+	}
+
+	// keep a clone in memory while resetting the original to a blank
+	if (!ofi.img) {
+		ofi.img = new Image(el.width, el.height);
+		ofi.img.srcset = nativeGetAttribute.call(el, "data-ofi-srcset") || el.srcset;
+		ofi.img.src = nativeGetAttribute.call(el, "data-ofi-src") || el.src;
+
+		// preserve for any future cloneNode calls
+		// https://github.com/bfred-it/object-fit-images/issues/53
+		nativeSetAttribute.call(el, "data-ofi-src", el.src);
+		if (el.srcset) {
+			nativeSetAttribute.call(el, "data-ofi-srcset", el.srcset);
+		}
+
+		setPlaceholder(el, el.naturalWidth || el.width, el.naturalHeight || el.height);
+
+		// remove srcset because it overrides src
+		if (el.srcset) {
+			el.srcset = '';
+		}
+		try {
+			keepSrcUsable(el);
+		} catch (err) {
+			if (window.console) {
+				console.log('http://bit.ly/ofi-old-browser');
+			}
+		}
+	}
+
+	polyfillCurrentSrc(ofi.img);
+
+	el.style.backgroundImage = "url(" + ((ofi.img.currentSrc || ofi.img.src).replace('(', '%28').replace(')', '%29')) + ")";
+	el.style.backgroundPosition = style['object-position'] || 'center';
+	el.style.backgroundRepeat = 'no-repeat';
+
+	if (/scale-down/.test(style['object-fit'])) {
+		onImageReady(ofi.img, function () {
+			if (ofi.img.naturalWidth > el.width || ofi.img.naturalHeight > el.height) {
+				el.style.backgroundSize = 'contain';
+			} else {
+				el.style.backgroundSize = 'auto';
+			}
+		});
+	} else {
+		el.style.backgroundSize = style['object-fit'].replace('none', 'auto').replace('fill', '100% 100%');
+	}
+
+	onImageReady(ofi.img, function (img) {
+		setPlaceholder(el, img.naturalWidth, img.naturalHeight);
+	});
+}
+
+function keepSrcUsable(el) {
+	var descriptors = {
+		get: function get(prop) {
+			return el[OFI].img[prop ? prop : 'src'];
+		},
+		set: function set(value, prop) {
+			el[OFI].img[prop ? prop : 'src'] = value;
+			nativeSetAttribute.call(el, ("data-ofi-" + prop), value); // preserve for any future cloneNode
+			fixOne(el);
+			return value;
+		}
+	};
+	Object.defineProperty(el, 'src', descriptors);
+	Object.defineProperty(el, 'currentSrc', {
+		get: function () { return descriptors.get('currentSrc'); }
+	});
+	Object.defineProperty(el, 'srcset', {
+		get: function () { return descriptors.get('srcset'); },
+		set: function (ss) { return descriptors.set(ss, 'srcset'); }
+	});
+}
+
+function hijackAttributes() {
+	function getOfiImageMaybe(el, name) {
+		return el[OFI] && el[OFI].img && (name === 'src' || name === 'srcset') ? el[OFI].img : el;
+	}
+	if (!supportsObjectPosition) {
+		HTMLImageElement.prototype.getAttribute = function (name) {
+			return nativeGetAttribute.call(getOfiImageMaybe(this, name), name);
+		};
+
+		HTMLImageElement.prototype.setAttribute = function (name, value) {
+			return nativeSetAttribute.call(getOfiImageMaybe(this, name), name, String(value));
+		};
+	}
+}
+
+function fix(imgs, opts) {
+	var startAutoMode = !autoModeEnabled && !imgs;
+	opts = opts || {};
+	imgs = imgs || 'img';
+
+	if ((supportsObjectPosition && !opts.skipTest) || !supportsOFI) {
+		return false;
+	}
+
+	// use imgs as a selector or just select all images
+	if (typeof imgs === 'string') {
+		imgs = document.querySelectorAll(imgs);
+	} else if (!('length' in imgs)) {
+		imgs = [imgs];
+	}
+
+	// apply fix to all
+	for (var i = 0; i < imgs.length; i++) {
+		imgs[i][OFI] = imgs[i][OFI] || {
+			skipTest: opts.skipTest
+		};
+		fixOne(imgs[i]);
+	}
+
+	if (startAutoMode) {
+		document.body.addEventListener('load', function (e) {
+			if (e.target.tagName === 'IMG') {
+				fix(e.target, {
+					skipTest: opts.skipTest
+				});
+			}
+		}, true);
+		autoModeEnabled = true;
+		imgs = 'img'; // reset to a generic selector for watchMQ
+	}
+
+	// if requested, watch media queries for object-fit change
+	if (opts.watchMQ) {
+		window.addEventListener('resize', fix.bind(null, imgs, {
+			skipTest: opts.skipTest
+		}));
+	}
+}
+
+fix.supportsObjectFit = supportsObjectFit;
+fix.supportsObjectPosition = supportsObjectPosition;
+
+hijackAttributes();
+
+/* harmony default export */ __webpack_exports__["default"] = fix;
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+/**
+ * Object Fit Videos
+ * Polyfill for object-fit and object-position CSS properties on video elements
+ * Covers IE9, IE10, IE11, Edge, Safari <10
+ *
+ * Usage
+ * In your CSS, add a special font-family tag for IE/Edge
+ * video {
+ *   object-fit: cover;
+ *   font-family: 'object-fit: cover;';
+ * }
+ *
+ * Before the closing body tag, or whenever the DOM is ready,
+ * make the JavaScript call
+ * objectFitVideos();
+ *
+ * All video elements with the special CSS property will be targeted
+ *
+ * @license  MIT (https://opensource.org/licenses/MIT)
+ * @author   Todd Miller <todd.miller@tricomb2b.com>
+ * @version  1.0.2
+ * @changelog
+ * 2016-08-19 - Adds object-position support.
+ * 2016-08-19 - Add throttle function for more performant resize events
+ * 2016-08-19 - Initial release with object-fit support, and
+ *              object-position default 'center'
+ * 2016-10-14 - No longer relies on window load event, instead requires a specific
+ *              function call to initialize the videos for object fit and position.
+ * 2016-11-28 - Support CommonJS environment, courtesy of @msorensson
+ * 2016-12-05 - Refactors the throttling function to support IE
+ */
+var objectFitVideos = function (videos) {
+  'use strict';
+
+  var testImg                = new Image(),
+      supportsObjectFit      = 'object-fit' in testImg.style,
+      supportsObjectPosition = 'object-position' in testImg.style,
+      propRegex              = /(object-fit|object-position)\s*:\s*([-\w\s%]+)/g;
+
+  if (!supportsObjectFit || !supportsObjectPosition) {
+    initialize(videos);
+    throttle('resize', 'optimizedResize');
+  }
+
+  /**
+   * Parse the style and look for the special font-family tag
+   * @param  {object} $el The element to parse
+   * @return {object}     The font-family properties we're interested in
+   */
+  function getStyle ($el) {
+    var style  = getComputedStyle($el).fontFamily,
+        parsed = null,
+        props  = {};
+
+      while ((parsed = propRegex.exec(style)) !== null) {
+        props[parsed[1]] = parsed[2];
+      }
+
+      if (props['object-position'])
+        return parsePosition(props);
+
+      return props;
+  }
+
+  /**
+   * Initialize all the relevant video elements and get them fitted
+   */
+  function initialize (videos) {
+    var index  = -1;
+    videos = videos || 'video';
+
+    // use videos as a selector or just select all videos
+    if (typeof videos === 'string') {
+      videos = document.querySelectorAll(videos);
+    } else if (!('length' in videos)) {
+      videos = [videos];
+    }
+
+    while (videos[++index]) {
+      var style = getStyle(videos[index]);
+
+      // only do work if the property is on the element
+      if (style['object-fit'] || style['object-position']) {
+        // set the default values
+        style['object-fit'] = style['object-fit'] || 'fill';
+        fitIt(videos[index], style);
+      }
+    }
+  }
+
+  /**
+   * Object Fit
+   * @param  {object} $el Element to fit
+   * @return {object}     The element's relevant properties
+   */
+  function fitIt ($el, style) {
+    // fill is the default behavior, no action is necessary
+    if (style['object-fit'] === 'fill')
+      return;
+
+    // convenience style properties on the source element
+    var setCss = $el.style,
+        getCss = window.getComputedStyle($el);
+
+    // create and insert a wrapper element
+    var $wrap = document.createElement('object-fit');
+    $wrap.appendChild($el.parentNode.replaceChild($wrap, $el));
+
+    // style the wrapper element to mostly match the source element
+    var wrapCss = {
+      height:    '100%',
+      width:     '100%',
+      boxSizing: 'content-box',
+      display:   'inline-block',
+      overflow:  'hidden'
+    };
+
+    'backgroundColor backgroundImage borderColor borderStyle borderWidth bottom fontSize lineHeight left opacity margin position right top visibility'.replace(/\w+/g, function (key) {
+      wrapCss[key] = getCss[key];
+    });
+
+    for (var key in wrapCss)
+      $wrap.style[key] = wrapCss[key];
+
+    // give the source element some saner styles
+    setCss.border  = setCss.margin = setCss.padding = 0;
+    setCss.display = 'block';
+    setCss.opacity = 1;
+
+    // set up the event handlers
+    $el.addEventListener('loadedmetadata', doWork);
+    window.addEventListener('optimizedResize', doWork);
+
+    // we may have missed the loadedmetadata event, so if the video has loaded
+    // enough data, just drop the event listener and execute
+    if ($el.readyState >= 1) {
+      $el.removeEventListener('loadedmetadata', doWork);
+      doWork();
+    }
+
+    /**
+     * Do the actual sizing. Math.
+     * @methodOf fitIt
+     */
+    function doWork () {
+      // the actual size and ratio of the video
+      // we do this here, even though it doesn't change, because
+      // at this point we can be sure the metadata has loaded
+      var videoWidth  = $el.videoWidth,
+          videoHeight = $el.videoHeight,
+          videoRatio  = videoWidth / videoHeight;
+
+      var wrapWidth  = $wrap.clientWidth,
+          wrapHeight = $wrap.clientHeight,
+          wrapRatio  = wrapWidth / wrapHeight;
+
+      var newHeight = 0,
+          newWidth  = 0;
+      setCss.marginLeft = setCss.marginTop = 0;
+
+      // basically we do the opposite action for contain and cover,
+      // depending on whether the video aspect ratio is less than or
+      // greater than the wrapper's aspect ratio
+      if (videoRatio < wrapRatio ?
+          style['object-fit'] === 'contain' : style['object-fit'] === 'cover') {
+        newHeight = wrapHeight * videoRatio;
+        newWidth  = wrapWidth / videoRatio;
+
+        setCss.width  = Math.round(newHeight) + 'px';
+        setCss.height = wrapHeight + 'px';
+
+        if (style['object-position-x'] === 'left')
+          setCss.marginLeft = 0;
+        else if (style['object-position-x'] === 'right')
+          setCss.marginLeft = Math.round(wrapWidth - newHeight) + 'px';
+        else
+          setCss.marginLeft = Math.round((wrapWidth - newHeight) / 2) + 'px';
+      } else {
+        newWidth = wrapWidth / videoRatio;
+
+        setCss.width     = wrapWidth + 'px';
+        setCss.height    = Math.round(newWidth) + 'px';
+
+        if (style['object-position-y'] === 'top')
+          setCss.marginTop = 0;
+        else if (style['object-position-y'] === 'bottom')
+          setCss.marginTop = Math.round(wrapHeight - newWidth) + 'px';
+        else
+          setCss.marginTop = Math.round((wrapHeight - newWidth) / 2) + 'px';
+      }
+    }
+  }
+
+  /**
+   * Split the object-position property into x and y position properties
+   * @param  {object} style Relevant element styles
+   * @return {object}       The style object with the added x and y props
+   */
+  function parsePosition (style) {
+    if (~style['object-position'].indexOf('left'))
+      style['object-position-x'] = 'left';
+    else if (~style['object-position'].indexOf('right'))
+      style['object-position-x'] = 'right';
+    else
+      style['object-position-x'] = 'center';
+
+    if (~style['object-position'].indexOf('top'))
+      style['object-position-y'] = 'top';
+    else if (~style['object-position'].indexOf('bottom'))
+      style['object-position-y'] = 'bottom';
+    else
+      style['object-position-y'] = 'center';
+
+    return style;
+  }
+
+  /**
+   * Throttle an event with RequestAnimationFrame API for better performance
+   * @param  {string} type The event to throttle
+   * @param  {string} name Custom event name to listen for
+   * @param  {object} obj  Optional object to attach the event to
+   */
+  function throttle (type, name, obj) {
+    obj = obj || window;
+    var running = false,
+        evt     = null;
+
+    // IE does not support the CustomEvent constructor
+    // so if that fails do it the old way
+    try {
+      evt = new CustomEvent(name);
+    } catch (e) {
+      evt = document.createEvent('Event');
+      evt.initEvent(name, true, true);
+    }
+
+    var func = function () {
+      if (running) return;
+
+      running = true;
+      requestAnimationFrame(function () {
+        obj.dispatchEvent(evt);
+        running = false;
+      });
+    };
+
+    obj.addEventListener(type, func);
+  }
+};
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+  module.exports = objectFitVideos;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(base) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+  if (true) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else if (typeof exports !== "undefined") {
+    factory(require('../src'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(global.src);
+    global.demo = mod.exports;
+  }
+})(this, function (_src) {
+  'use strict';
+
+  var _src2 = _interopRequireDefault(_src);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  base.features.add('fit', _src2.default);
+  base.features.init();
+});
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ })
 /******/ ]);
