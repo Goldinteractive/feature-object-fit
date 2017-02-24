@@ -1,4 +1,4 @@
-import ObjectFitImage from '../src'
+import ObjectFit from '../src'
 
-base.features.add('fit', ObjectFitImage)
+base.features.add('fit', ObjectFit)
 base.features.init()

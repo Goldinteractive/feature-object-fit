@@ -1,7 +1,7 @@
 # Import the environment variables
 -include .env
 
-LIBRARY_NAME=object-fit-images
+LIBRARY_NAME=object-fit
 
 NODE_MODULES=./node_modules
 SCRIPTS_PATH=./.tasks

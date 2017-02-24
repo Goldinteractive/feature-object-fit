@@ -1,8 +1,8 @@
 {
-  "name": "gi-feature-object-fit-images",
-  "version": "0.0.6",
-  "description": "Polyfill functionality for 'object-fit' / 'object-position' properties on images.",
-  "main": "lib/object-fit-images.js",
+  "name": "gi-feature-object-fit",
+  "version": "0.0.1",
+  "description": "Polyfill functionality for 'object-fit' / 'object-position' properties on images and videos.",
+  "main": "lib/object-fit.js",
   "jsnext:main": "src/index.js",
   "repository": {
     "type": "git",
@@ -33,7 +33,9 @@
     "webpack": "^2.2.1"
   },
   "dependencies": {
-    "object-fit-images": "^3.1.0"
+    "iphone-inline-video": "^2.0.2",
+    "object-fit-images": "^3.1.0",
+    "object-fit-videos": "https://github.com/oncode/object-fit-videos.git"
   },
   "browserslist": [
     "> 5%",

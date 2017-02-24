@@ -1,35 +1,46 @@
-import objectFitImages from 'object-fit-images'
+import objectFitImage from 'object-fit-images'
+import objectFitVideo from 'object-fit-videos'
+import enableInlineVideo from 'iphone-inline-video'
 
 /**
- * Object fit image feature class.
+ * Object fit feature class.
  */
-class ObjectFitImage extends base.features.Feature {
+class ObjectFit extends base.features.Feature {
 
   init() {
     this._objectFit = this.node.getAttribute('data-object-fit')
     this._objectPosition = this.node.getAttribute('data-object-position')
 
-    if (this._objectFit) {
+    if (this._objectFit && this._objectPosition) {
       this.node.style.objectFit = this._objectFit
-    } else {
-      this._objectFit = base.utils.dom.computedStyle(this.node, 'object-fit')
-    }
-
-    if (this._objectPosition) {
       this.node.style.objectPosition = this._objectPosition
-    } else {
-      this._objectPosition = base.utils.dom.computedStyle(this.node, 'object-position')
+      this.node.style.fontFamily = `"object-fit: ${this._objectFit}; object-position: ${this._objectPosition}"`
+    } else if (this._objectFit) {
+      this.node.style.objectFit = this._objectFit
+      this.node.style.fontFamily = `"object-fit: ${this._objectFit}; object-position: ${this.options.defaultObjectPosition}"`
+    } else  if (this._objectPosition) {
+      this.node.style.objectPosition = this._objectPosition
+      this.node.style.fontFamily = `"object-fit: ${this.options.defaultObjectFit}; object-position: ${this._objectPosition}"`
     }
 
-    this.node.style.fontFamily = `"object-fit: ${this._objectFit}; object-position: ${this._objectPosition}"`
+    if (this.node.nodeName.toLowerCase() == 'video') {
+      objectFitVideo(this.node)
+      enableInlineVideo(this.node, {
+          iPad: this.options.iPad
+      })
 
-    objectFitImages(this.node, this.options)
+      if (this.node.autoplay) this.node.play()
+    } else {
+      objectFitImage(this.node, {
+        watchMQ: this.options.watchMQ
+      })
+    }
   }
 
 }
 
 /**
- * Default feature options (also used to initialize object-fit-images library).
+ * Default feature options (also used to initialize object-fit-images and iphone-inline-video library).
  *
  * @see https://github.com/bfred-it/object-fit-images
  *
@@ -37,9 +48,16 @@ class ObjectFitImage extends base.features.Feature {
  * @property {Boolean} watchMQ=false
  *   This enables the automatic re-fix of the selected images when the window resizes.
  *   You only need it in some cases
+ * @property {String} defaultObjectFit='cover'
+ *   Default object fit used when only `data-object-position` is defined
+ * @property {String} defaultObjectPosition='center center'
+ *   Default object position used when only `data-object-fit` is defined
  */
-ObjectFitImage.defaultOptions = {
-  watchMQ: false
+ObjectFit.defaultOptions = {
+  iPad: true,
+  watchMQ: false,
+  defaultObjectFit: 'cover',
+  defaultObjectPosition: 'center center'
 }
 
-export default ObjectFitImage
+export default ObjectFit
