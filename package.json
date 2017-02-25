@@ -6,7 +6,7 @@
   "jsnext:main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Goldinteractive/feature-object-fit-images.git"
+    "url": "https://github.com/Goldinteractive/feature-object-fit.git"
   },
   "author": "Manuel Sommerhalder",
   "license": "MIT",
