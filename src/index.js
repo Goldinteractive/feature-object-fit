@@ -39,10 +39,10 @@ class ObjectFit extends base.features.Feature {
       })
     }
 
-    // remove
-    base.utils.fn.rAF(() => {
+    // remove initial hide class
+    window.setTimeout(() => {
       this.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE)
-    })
+    }, 0)
   }
 
 }
