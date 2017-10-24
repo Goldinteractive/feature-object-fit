@@ -1,6 +1,6 @@
 {
   "name": "gi-feature-object-fit",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Polyfill functionality for 'object-fit' / 'object-position' properties on images and videos.",
   "main": "lib/object-fit.js",
   "jsnext:main": "src/index.js",
