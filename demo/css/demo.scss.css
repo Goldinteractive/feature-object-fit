@@ -38,7 +38,8 @@ body {
   width: 100%;
   height: 100%;
   top: 0;
-  left: 0; }
+  left: 0;
+  visibility: visible; }
 .ft-fit-bg > img,
 .ft-fit-bg > video {
   width: 100%;
@@ -64,7 +65,7 @@ body {
   object-fit: fill;
   font-family: "object-fit: fill; object-position: center center;"; }
 .ft-fit-bg.-initial-hide {
-  display: none; }
+  visibility: hidden; }
 .ft-fit-bg.-video {
   overflow: hidden; }
 

@@ -3857,8 +3857,12 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
           });
         }
 
-        // remove
+        // remove initial hide class
         base.utils.fn.rAF(function () {
+          if (_this2.node.parentElement.tagName.toLowerCase() === 'object-fit') {
+            _this2.node.parentElement.style.visibility = 'visible';
+          }
+
           _this2.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE);
         });
       }
