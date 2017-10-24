@@ -50,7 +50,12 @@ $ft-fit-bg-darkened-background-color: rgba(0, 0, 0, 0.3);
     }
   }
 
+  &.-initial-hide {
+    display: none;
+  }
+
   &.-image {}
+
   &.-video {
     overflow: hidden;
   }

@@ -2,6 +2,9 @@ import objectFitImage from 'object-fit-images'
 import objectFitVideo from 'object-fit-videos'
 import enableInlineVideo from 'iphone-inline-video'
 
+const CLASS_FEATURE = '.ft-fit-bg'
+const CLASS_INITIAL_HIDE = '-initial-hide'
+
 /**
  * Object fit feature class.
  */
@@ -35,6 +38,11 @@ class ObjectFit extends base.features.Feature {
         watchMQ: this.options.watchMQ
       })
     }
+
+    // remove
+    base.utils.fn.rAF(() => {
+      this.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE)
+    })
   }
 
 }

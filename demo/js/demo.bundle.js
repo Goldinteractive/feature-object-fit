@@ -3808,6 +3808,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
   }
 
+  var CLASS_FEATURE = '.ft-fit-bg';
+  var CLASS_INITIAL_HIDE = '-initial-hide';
+
+  /**
+   * Object fit feature class.
+   */
+
   var ObjectFit = function (_base$features$Featur) {
     _inherits(ObjectFit, _base$features$Featur);
 
@@ -3820,6 +3827,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     _createClass(ObjectFit, [{
       key: 'init',
       value: function init() {
+        var _this2 = this;
+
         this._objectFit = this.node.getAttribute('data-object-fit');
         this._objectPosition = this.node.getAttribute('data-object-position');
 
@@ -3847,6 +3856,11 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             watchMQ: this.options.watchMQ
           });
         }
+
+        // remove
+        base.utils.fn.rAF(function () {
+          _this2.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE);
+        });
       }
     }]);
 
