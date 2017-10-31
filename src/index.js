@@ -40,13 +40,13 @@ class ObjectFit extends base.features.Feature {
     }
 
     // remove initial hide class
-    base.utils.fn.rAF(() => {
+    window.setTimeout(() => {
       if (this.node.parentElement.tagName.toLowerCase() === 'object-fit') {
         this.node.parentElement.style.visibility = 'visible'
       }
 
       this.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE)
-    })
+    }, 0)
   }
 
 }

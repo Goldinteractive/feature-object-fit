@@ -52,6 +52,7 @@ $ft-fit-bg-darkened-background-color: rgba(0, 0, 0, 0.3);
 
   &.-initial-hide {
     visibility: hidden;
+    opacity: 0;
   }
 
   &.-image {}
