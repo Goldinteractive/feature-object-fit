@@ -3809,7 +3809,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   }
 
   var CLASS_FEATURE = '.ft-fit-bg';
-  var CLASS_INITIAL_HIDE = '-initial-hide';
 
   /**
    * Object fit feature class.
@@ -3845,25 +3844,56 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         }
 
         if (this.node.nodeName.toLowerCase() == 'video') {
-          (0, _objectFitVideos2.default)(this.node);
-          (0, _iphoneInlineVideo2.default)(this.node, {
-            iPad: this.options.iPad
-          });
+          (function () {
+            (0, _objectFitVideos2.default)(_this2.node);
+            (0, _iphoneInlineVideo2.default)(_this2.node, {
+              iPad: _this2.options.iPad
+            });
 
-          if (this.node.autoplay) this.node.play();
+            var onload = function onload() {
+              if (_this2.node.readyState >= _this2.node.HAVE_CURRENT_DATA) {
+                _this2.removeEventListener(_this2.node, 'loadeddata', onload);
+                _this2._removeInitialHide();
+              }
+            };
+
+            if (_this2.node.readyState >= _this2.node.HAVE_CURRENT_DATA || !_this2.options.waitForMediaLoaded) {
+              _this2._removeInitialHide();
+            } else {
+              _this2.addEventListener(_this2.node, 'loadeddata', onload);
+            }
+          })();
         } else {
           (0, _objectFitImages2.default)(this.node, {
             watchMQ: this.options.watchMQ
           });
-        }
 
-        // remove initial hide class
+          if (this.node.naturalWidth || !this.options.waitForMediaLoaded) {
+            this._removeInitialHide();
+          } else {
+            (function () {
+              var onload = function onload() {
+                _this2.removeEventListener(_this2.node, 'load', onload);
+                _this2._removeInitialHide();
+              };
+
+              _this2.addEventListener(_this2.node, 'load', onload);
+            })();
+          }
+        }
+      }
+    }, {
+      key: '_removeInitialHide',
+      value: function _removeInitialHide() {
+        var _this3 = this;
+
         window.setTimeout(function () {
-          if (_this2.node.parentElement.tagName.toLowerCase() === 'object-fit') {
-            _this2.node.parentElement.style.visibility = 'visible';
+          if (_this3.node.parentElement.tagName.toLowerCase() === 'object-fit') {
+            _this3.node.parentElement.style.visibility = 'inherit';
+            _this3.node.parentElement.style.opacity = 'inherit';
           }
 
-          _this2.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE);
+          _this3.node.closest(CLASS_FEATURE).classList.remove(_this3.options.classInitialHide);
         }, 0);
       }
     }]);
@@ -3880,6 +3910,9 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
    * @property {Boolean} watchMQ=false
    *   This enables the automatic re-fix of the selected images when the window resizes.
    *   You only need it in some cases
+   * @property {Boolean} waitForMediaLoaded=true
+   *   Enable to remove initialHideClass after media has been loaded.
+   *   Set false to wait only for polyfill initialization.
    * @property {String} defaultObjectFit='cover'
    *   Default object fit used when only `data-object-position` is defined
    * @property {String} defaultObjectPosition='center center'
@@ -3888,8 +3921,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   ObjectFit.defaultOptions = {
     iPad: true,
     watchMQ: false,
+    waitForMediaLoaded: true,
     defaultObjectFit: 'cover',
-    defaultObjectPosition: 'center center'
+    defaultObjectPosition: 'center center',
+    classInitialHide: '-initial-hide'
   };
 
   exports.default = ObjectFit;

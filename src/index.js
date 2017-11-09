@@ -3,7 +3,6 @@ import objectFitVideo from 'object-fit-videos'
 import enableInlineVideo from 'iphone-inline-video'
 
 const CLASS_FEATURE = '.ft-fit-bg'
-const CLASS_INITIAL_HIDE = '-initial-hide'
 
 /**
  * Object fit feature class.
@@ -32,20 +31,44 @@ class ObjectFit extends base.features.Feature {
           iPad: this.options.iPad
       })
 
-      if (this.node.autoplay) this.node.play()
+      let onload = () => {
+        if (this.node.readyState >= this.node.HAVE_CURRENT_DATA) {
+          this.removeEventListener(this.node, 'loadeddata', onload)
+          this._removeInitialHide()
+        }
+      }
+
+      if (this.node.readyState >= this.node.HAVE_CURRENT_DATA || !this.options.waitForMediaLoaded) {
+        this._removeInitialHide()
+      } else {
+        this.addEventListener(this.node, 'loadeddata', onload)
+      }
     } else {
       objectFitImage(this.node, {
         watchMQ: this.options.watchMQ
       })
-    }
 
-    // remove initial hide class
+      if (this.node.naturalWidth || !this.options.waitForMediaLoaded) {
+        this._removeInitialHide()
+      } else {
+        let onload = () => {
+          this.removeEventListener(this.node, 'load', onload)
+          this._removeInitialHide()
+        }
+
+        this.addEventListener(this.node, 'load', onload)
+      }
+    }
+  }
+
+  _removeInitialHide() {
     window.setTimeout(() => {
       if (this.node.parentElement.tagName.toLowerCase() === 'object-fit') {
-        this.node.parentElement.style.visibility = 'visible'
+        this.node.parentElement.style.visibility = 'inherit'
+        this.node.parentElement.style.opacity = 'inherit'
       }
 
-      this.node.closest(CLASS_FEATURE).classList.remove(CLASS_INITIAL_HIDE)
+      this.node.closest(CLASS_FEATURE).classList.remove(this.options.classInitialHide)
     }, 0)
   }
 
@@ -60,6 +83,9 @@ class ObjectFit extends base.features.Feature {
  * @property {Boolean} watchMQ=false
  *   This enables the automatic re-fix of the selected images when the window resizes.
  *   You only need it in some cases
+ * @property {Boolean} waitForMediaLoaded=true
+ *   Enable to remove initialHideClass after media has been loaded.
+ *   Set false to wait only for polyfill initialization.
  * @property {String} defaultObjectFit='cover'
  *   Default object fit used when only `data-object-position` is defined
  * @property {String} defaultObjectPosition='center center'
@@ -68,8 +94,10 @@ class ObjectFit extends base.features.Feature {
 ObjectFit.defaultOptions = {
   iPad: true,
   watchMQ: false,
+  waitForMediaLoaded: true,
   defaultObjectFit: 'cover',
-  defaultObjectPosition: 'center center'
+  defaultObjectPosition: 'center center',
+  classInitialHide: '-initial-hide'
 }
 
 export default ObjectFit
