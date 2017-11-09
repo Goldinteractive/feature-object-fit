@@ -3854,11 +3854,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
               if (_this2.node.readyState >= _this2.node.HAVE_CURRENT_DATA) {
                 _this2.removeEventListener(_this2.node, 'loadeddata', onload);
                 _this2._removeInitialHide();
+                if (_this2.node.autoplay) _this2.node.play();
               }
             };
 
             if (_this2.node.readyState >= _this2.node.HAVE_CURRENT_DATA || !_this2.options.waitForMediaLoaded) {
               _this2._removeInitialHide();
+              if (_this2.node.autoplay) _this2.node.play();
             } else {
               _this2.addEventListener(_this2.node, 'loadeddata', onload);
             }

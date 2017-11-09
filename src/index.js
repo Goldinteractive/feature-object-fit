@@ -35,11 +35,13 @@ class ObjectFit extends base.features.Feature {
         if (this.node.readyState >= this.node.HAVE_CURRENT_DATA) {
           this.removeEventListener(this.node, 'loadeddata', onload)
           this._removeInitialHide()
+          if (this.node.autoplay) this.node.play()
         }
       }
 
       if (this.node.readyState >= this.node.HAVE_CURRENT_DATA || !this.options.waitForMediaLoaded) {
         this._removeInitialHide()
+        if (this.node.autoplay) this.node.play()
       } else {
         this.addEventListener(this.node, 'loadeddata', onload)
       }
