@@ -70,7 +70,11 @@ class ObjectFit extends base.features.Feature {
         this.node.parentElement.style.opacity = 'inherit'
       }
 
-      this.node.closest(CLASS_FEATURE).classList.remove(this.options.classInitialHide)
+      let featureParent = this.node.closest(CLASS_FEATURE)
+
+      if (featureParent) {
+        featureParent.classList.remove(this.options.classInitialHide)
+      }
     }, 0)
   }
 
