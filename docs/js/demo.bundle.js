@@ -3895,7 +3895,11 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             _this3.node.parentElement.style.opacity = 'inherit';
           }
 
-          _this3.node.closest(CLASS_FEATURE).classList.remove(_this3.options.classInitialHide);
+          var featureParent = _this3.node.closest(CLASS_FEATURE);
+
+          if (featureParent) {
+            featureParent.classList.remove(_this3.options.classInitialHide);
+          }
         }, 0);
       }
     }]);
