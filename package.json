@@ -1,6 +1,6 @@
 {
   "name": "gi-feature-object-fit",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Polyfill functionality for 'object-fit' / 'object-position' properties on images and videos.",
   "main": "lib/object-fit.js",
   "jsnext:main": "src/index.js",
@@ -35,7 +35,7 @@
   "dependencies": {
     "iphone-inline-video": "^2.2.2",
     "object-fit-images": "^3.2.3",
-    "object-fit-videos": "https://github.com/oncode/object-fit-videos.git"
+    "object-fit-videos": "^1.0.4"
   },
   "browserslist": [
     "> 5%",
